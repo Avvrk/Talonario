@@ -749,7 +749,7 @@ main {
 	left: 50%;
 	transform: translate(-50%, -50%);
 	width: 35rem;
-	display: flex;
+	display: none;
 	flex-direction: column;
 	background-color: #000;
 }
