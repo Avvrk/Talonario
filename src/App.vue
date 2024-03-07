@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from "vue";
 import Swal from "sweetalert2";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+jsPDF.autotable = autoTable;
 
 // Formulario
 let premio = ref("");
@@ -36,6 +40,13 @@ let boletaDisponible = ref(false);
 let boletaComprada = ref(false);
 
 let boletas = ref([]);
+
+// Personalizacion de colores
+let colorFondo = ref("#fff");
+let colorBoletasCompradas = ref("blue");
+let colorBoletasReservadas = ref("red");
+let colorBoletasDisponibles = ref("black");
+let colorPagina = ref("blue");
 
 function generarLoteria() {
     fsDate = new Date(fechaSorteo.value + "T00:00:00");
@@ -101,7 +112,7 @@ function generarLoteria() {
             }
         }
         mostrarFormulario.value = false;
-		mostrarFondo.value = false;
+        mostrarFondo.value = false;
 
         console.log(boletas.value);
     }
@@ -110,7 +121,7 @@ function generarLoteria() {
 function editar() {
     mostrarFormulario.value = true;
     mostrarInformacion.value = false;
-	mostrarFondo.value = true;
+    mostrarFondo.value = true;
 }
 
 let element = ref(null);
@@ -154,7 +165,7 @@ function modificarBoleta(elemento, indice) {
 function mostrarFBD() {
     mostrarFormularioBD.value = false;
     mostrarFormularioBD.value = true;
-	mostrarFondo.value = true;
+    mostrarFondo.value = true;
 }
 
 let clientes = ref([]);
@@ -228,7 +239,7 @@ function adquirir() {
         });
         boletas.value[index.value].estado = "Comprado";
         mostrarFormularioBD.value = false;
-		mostrarFondo.value = false;
+        mostrarFondo.value = false;
         boletaDisponible.value = false;
     } else if (pagarBD.value == "no") {
         Swal.fire({
@@ -245,7 +256,7 @@ function adquirir() {
         });
         boletas.value[index.value].estado = "Reservado";
         mostrarFormularioBD.value = false;
-		mostrarFondo.value = false;
+        mostrarFondo.value = false;
         boletaDisponible.value = false;
     }
 }
@@ -253,11 +264,11 @@ function adquirir() {
 function cambiarColorBoton(objeto) {
     switch (objeto) {
         case "Disponible":
-            return { backgroundColor: "black" };
+            return { backgroundColor: colorBoletasDisponibles.value };
         case "Reservado":
-            return { backgroundColor: "red" };
+            return { backgroundColor: colorBoletasReservadas.value };
         case "Comprado":
-            return { backgroundColor: "blue" };
+            return { backgroundColor: colorBoletasCompradas.value };
     }
 }
 
@@ -265,7 +276,7 @@ let participante = null;
 
 function mostrarDatosParticipante() {
     mostrarParticipante.value = true;
-	mostrarFondo.value = true;
+    mostrarFondo.value = true;
     participante = clientes.value.find((c) => c.indice == index.value);
 }
 
@@ -281,26 +292,52 @@ function marcarPagada() {
 
 function cerrarVentana() {
     mostrarParticipante.value = false;
-	mostrarFondo.value = false;
+    mostrarFondo.value = false;
 }
 
 function mostrarLista() {
     mostrarListarBoletas.value = true;
-	mostrarFondo.value = true;
+    mostrarFondo.value = true;
 }
 
 function cerrarLista() {
     mostrarListarBoletas.value = false;
-	mostrarFondo.value = false;
+    mostrarFondo.value = false;
 }
+
+const imprimir = () => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(12);
+  doc.text("Resumen de boletas vendidas", 10, 10);
+
+  const tableData = clientes.value.map((boleta, index) => [
+    boleta.indice,
+    boleta.nombre,
+    boleta.telefono,
+    boleta.direccion,
+    boleta.pagar,
+  ]);
+
+  doc.autoTable({
+    head: [["Boleta", "Nombre", "Teléfono", "Dirección", "Pago"]],
+    body: tableData,
+    startY: 20,
+  });
+
+  const totalBoletas = clientes.value.length;
+  doc.text(`Total de balotas compradas: ${totalBoletas}`, 10, doc.autoTable.previous.finalY + 10);
+
+  doc.save("vendidas.pdf");
+};
 </script>
 
 <template>
-    <div id="all">
-        <div id="header">
+    <div id="all" :style="{ backgroundColor: colorFondo }">
+        <div id="header" :style="{ backgroundColor: colorPagina }">
             <h1>TALONARIO</h1>
         </div>
-        <div id="footer">
+        <div id="footer" :style="{ backgroundColor: colorPagina }">
             <footer>© Copyright 2024 - Todos los derechos reservados</footer>
         </div>
         <!-- Desplegable boleta reservada -->
@@ -373,7 +410,7 @@ function cerrarLista() {
                             mostrarInformacion == true ? fechaSorteo : ""
                         }}</span>
                     </p>
-                    <button @click="editar()">Editar ✏</button>
+                    <button @click="editar()" :style="{ backgroundColor: colorPagina }">Editar ✏</button>
                 </div>
             </section>
             <section id="loteria">
@@ -390,16 +427,16 @@ function cerrarLista() {
                 <h2>ACCIONES</h2>
                 <div id="accContenido">
                     <button id="estadoB">ESTADO</button>
-                    <button @click="mostrarLista()">LISTAR BOLETAS</button>
-                    <button>PERSONALIZAR TALONARIO WEB</button>
-                    <button>GENERAR ARCHIVO DE DATOS</button>
+                    <button @click="mostrarLista()" :style="{ backgroundColor: colorPagina }">LISTAR BOLETAS</button>
+                    <button :style="{ backgroundColor: colorPagina }">PERSONALIZAR TALONARIO WEB</button>
+                    <button @click="imprimir()" :style="{ backgroundColor: colorPagina }">GENERAR ARCHIVO DE DATOS</button>
                 </div>
             </section>
             <!-- Fondo gris -->
             <div id="fondo" v-if="mostrarFondo == true"></div>
             <!-- Formulario boleta disponible -->
             <section id="formularioBD" v-if="mostrarFormularioBD == true">
-                <h2>DILIGENCIA LA INFORMACION</h2>
+                <h2 :style="{ backgroundColor: colorPagina }">DILIGENCIA LA INFORMACION</h2>
                 <p>
                     Boleta a Adquirir:
                     <span>{{ index <= 9 ? "0" + index : index }}</span>
@@ -443,11 +480,11 @@ function cerrarLista() {
                         No
                     </label>
                 </div>
-                <button @click="adquirir()">ADQUIRIR</button>
+                <button @click="adquirir()" :style="{ backgroundColor: colorPagina }">ADQUIRIR</button>
             </section>
             <!-- Formulario registro talonario -->
             <section id="formulario" v-if="mostrarFormulario == true">
-                <h2>CONFIGURA TU TALONARIO</h2>
+                <h2 :style="{ backgroundColor: colorPagina }">CONFIGURA TU TALONARIO</h2>
                 <div id="forContenido">
                     <input type="text" placeholder="Premio" v-model="premio" />
                     <input
@@ -491,12 +528,12 @@ function cerrarLista() {
                         ></option>
                     </select>
                     <input type="date" id="editDate" v-model="fechaSorteo" />
-                    <button @click="generarLoteria()">GUARDAR</button>
+                    <button @click="generarLoteria()" :style="{ backgroundColor: colorPagina }">GUARDAR</button>
                 </div>
             </section>
         </main>
         <div id="participante" v-if="mostrarParticipante == true">
-            <h2>PARTICIPANTE</h2>
+            <h2 :style="{ backgroundColor: colorPagina }">PARTICIPANTE</h2>
             <div id="contenedor">
                 <section>
                     <p class="icono">👤</p>
@@ -535,7 +572,7 @@ function cerrarLista() {
             </div>
         </div>
         <div id="listarBoletas" v-if="mostrarListarBoletas == true">
-            <h2>LISTADO DE BOLETAS</h2>
+            <h2 :style="{ backgroundColor: colorPagina }">LISTADO DE BOLETAS</h2>
             <div>
                 <article v-for="(e, i) in clientes" :key="i">
                     <p>Nombre</p>
@@ -548,15 +585,58 @@ function cerrarLista() {
                     <span>{{ e.indice }}</span>
                 </article>
             </div>
-            <button @click="cerrarLista()">Cerrar</button>
+            <button @click="cerrarLista()" :style="{ backgroundColor: colorPagina }">Cerrar</button>
+        </div>
+        <div id="paletasDeColores">
+            <h2 :style="{ backgroundColor: colorPagina }">PALETAS DE COLORES</h2>
+            <section>
+                <article>
+                    <img src="./img/bucket-svgrepo-com.svg" alt="Un balde de pintura" id="svgFondo">
+                    <div>
+                        <p>Color fondo</p>
+                        <input type="color" v-model="colorFondo">
+                    </div>
+                </article>
+                <article>
+                    <img src="./img/bucket-svgrepo-com.svg" alt="Un balde de pintura" id="svgBoletasCompradas">
+                    <div>
+                        <p>Color Boletas Compradas</p>
+                        <input type="color" v-model="colorBoletasCompradas">
+                    </div>
+                </article>
+                <article>
+                    <img src="./img/bucket-svgrepo-com.svg" alt="Un balde de pintura" id="svgBoletasReservadas">
+                    <div>
+                        <p>Color Boletas Reservadas</p>
+                        <input type="color" v-model="colorBoletasReservadas">
+                    </div>
+                </article>
+                <article>
+                    <img src="./img/bucket-svgrepo-com.svg" alt="Un balde de pintura" id="svgBoletasDisponibles">
+                    <div>
+                        <p>Color Boletas Disponibles</p>
+                        <input type="color" v-model="colorBoletasDisponibles">
+                    </div>
+                </article>
+                <article>
+                    <img src="./img/bucket-svgrepo-com.svg" alt="Un balde de pintura" id="svgPagina">
+                    <div>
+                        <p>Color De La Pagina</p>
+                        <input type="color" v-model="colorPagina">
+                    </div>
+                </article>
+            </section>
         </div>
     </div>
 </template>
 
 <style scoped>
-body {
-    width: 100% !important;
-    background-color: white;
+#all {
+    width: 100rem;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
 }
 
 #header {
@@ -564,7 +644,6 @@ body {
     top: 0;
     left: 50%;
     transform: translate(-50%);
-    background-color: blue;
     font-size: 10px;
     padding: 5px 0 5px 0;
     width: 100%;
@@ -576,7 +655,6 @@ body {
     bottom: 0;
     left: 50%;
     transform: translate(-50%);
-    background-color: blue;
     padding: 5px 0 5px 0;
     width: 100%;
 }
@@ -615,7 +693,6 @@ main {
     position: relative;
     left: 50%;
     transform: translate(-50%);
-    background-color: blue;
     font-size: 14px;
     font-weight: 400;
     padding: 5px 10px 7px 10px;
@@ -649,7 +726,6 @@ main {
     width: 140px;
     margin-bottom: 5px;
     border-radius: 6px;
-    background-color: blue;
 }
 
 #accion #estadoB {
@@ -682,7 +758,6 @@ main {
 }
 
 #formularioBD h2 {
-    background-color: blue;
     color: #fff;
     padding: 5px 40px;
     font-size: 15px;
@@ -716,7 +791,6 @@ main {
 }
 
 #formularioBD button {
-    background-color: blue;
     font-size: 13px;
     width: 100px;
     padding: 5px 10px 5px 10px;
@@ -736,7 +810,6 @@ main {
 }
 
 #formulario h2 {
-    background-color: blue;
     padding: 5px 40px;
     font-size: 15px;
     position: relative;
@@ -776,7 +849,6 @@ main {
 }
 
 #forContenido button {
-    background-color: blue;
     font-size: 13px;
     width: 100px;
     padding: 5px 10px 5px 10px;
@@ -901,7 +973,6 @@ main {
 }
 
 #participante h2 {
-    background-color: blue;
     color: #fff;
     padding: 5px 40px;
     font-size: 15px;
@@ -977,7 +1048,6 @@ main {
 }
 
 #listarBoletas h2 {
-    background-color: blue;
     color: #fff;
     padding: 10px 40px;
     font-size: 15px;
@@ -1011,6 +1081,41 @@ main {
 
 #listarBoletas button {
     margin: 10px;
-    background-color: blue;
+}
+
+#paletasDeColores {
+    background-color: #fff;
+    color: #000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 82rem;
+}
+
+#paletasDeColores h2 {
+    color: #fff;
+    padding: 10px 40px;
+    font-size: 15px;
+    text-align: left;
+    position: relative;
+    bottom: 12.2px;
+}
+
+#paletasDeColores section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    color: #000;
+}
+
+#paletasDeColores section article {
+    display: flex;
+    flex-direction: row;
+}
+
+#paletasDeColores section article div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 </style>
