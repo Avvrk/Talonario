@@ -28,6 +28,7 @@ hoy.setHours(0, 0, 0, 0);
 let hMes = hoy.getMonth();
 let hDia = hoy.getDate(); */
 
+let inicio = ref(1);
 let mostrarFormulario = ref(true);
 let mostrarInformacion = ref(false);
 let mostrarFormularioBD = ref(false);
@@ -114,6 +115,7 @@ function generarLoteria() {
 		}
 		mostrarFormulario.value = false;
 		mostrarFondo.value = false;
+		inicio.value = 0
 	}
 }
 
@@ -127,36 +129,42 @@ let element = ref(null);
 let index = ref(null);
 
 function modificarBoleta(elemento, indice) {
-	if (elemento.estado == "Disponible") {
-		// mostrar desplegable de boletas disponible
-		boletaDisponible.value = false;
-		boletaDisponible.value = true;
-		// esconde demas desplegables
+	if ( indice == index ) {
 		boletaReservada.value = false;
 		boletaComprada.value = false;
-
-		element.value = elemento;
-		index.value = indice;
-	} else if (elemento.estado == "Reservado") {
-		// mostrar desplegable de boletas reservada
-		boletaReservada.value = false;
-		boletaReservada.value = true;
-		// esconde demas desplegables
 		boletaDisponible.value = false;
-		boletaComprada.value = false;
-
-		element.value = elemento;
-		index.value = indice;
 	} else {
-		// mostrar desplegable de boletas comprada
-		boletaComprada.value = false;
-		boletaComprada.value = true;
-		// esconde demas desplegables
-		boletaDisponible.value = false;
-		boletaReservada.value = false;
+		if (elemento.estado == "Disponible") {
+			// mostrar desplegable de boletas disponible
+			boletaDisponible.value = false;
+			boletaDisponible.value = true;
+			// esconde demas desplegables
+			boletaReservada.value = false;
+			boletaComprada.value = false;
 
-		element.value = elemento;
-		index.value = indice;
+			element.value = elemento;
+			index.value = indice;
+		} else if (elemento.estado == "Reservado") {
+			// mostrar desplegable de boletas reservada
+			boletaReservada.value = false;
+			boletaReservada.value = true;
+			// esconde demas desplegables
+			boletaDisponible.value = false;
+			boletaComprada.value = false;
+
+			element.value = elemento;
+			index.value = indice;
+		} else {
+			// mostrar desplegable de boletas comprada
+			boletaComprada.value = false;
+			boletaComprada.value = true;
+			// esconde demas desplegables
+			boletaDisponible.value = false;
+			boletaReservada.value = false;
+
+			element.value = elemento;
+			index.value = indice;
+		}
 	}
 }
 
@@ -167,15 +175,14 @@ function mostrarFBD() {
 }
 
 let clientes = ref([]);
-let textDireccion = /^[A-Za-z0-9\s]+$/g;
+/* let textDireccion = /^[A-Za-z0-9\s]+$/g; */
 
 let hoyAhoraParaAdquirir = null;
 
 function adquirir() {
 	hoyAhoraParaAdquirir = new Date();
-	let fechaTexto = `${hoyAhoraParaAdquirir.getFullYear()}/${
-		hoyAhoraParaAdquirir.getMonth() + 1
-	}/${hoyAhoraParaAdquirir.getDate()}`;
+	let fechaTexto = `${hoyAhoraParaAdquirir.getFullYear()}/${hoyAhoraParaAdquirir.getMonth() + 1
+		}/${hoyAhoraParaAdquirir.getDate()}`;
 
 	if (
 		nombreBD.value == "" &&
@@ -212,12 +219,12 @@ function adquirir() {
 			text: "La dirección está vacía",
 			icon: "error",
 		});
-	} else if (!textDireccion.test(direccionBD.value)) {
+	} /* else if (!textDireccion.test(direccionBD.value)) {
 		Swal.fire({
 			text: "Ingrese una dirección de residencia valida",
 			icon: "error",
 		});
-	} else if (pagarBD.value == "") {
+	} */ else if (pagarBD.value == "") {
 		Swal.fire({
 			text: "Seleccione si paga ahora o no",
 			icon: "error",
@@ -239,6 +246,11 @@ function adquirir() {
 		mostrarFormularioBD.value = false;
 		mostrarFondo.value = false;
 		boletaDisponible.value = false;
+
+		nombreBD = ref("");
+		telefonoBD = ref("");
+		direccionBD = ref("");
+		pagarBD = ref("");
 	} else if (pagarBD.value == "no") {
 		Swal.fire({
 			text: "¡Gracias por reservar una boleta!",
@@ -256,6 +268,11 @@ function adquirir() {
 		mostrarFormularioBD.value = false;
 		mostrarFondo.value = false;
 		boletaDisponible.value = false;
+
+		nombreBD = ref("");
+		telefonoBD = ref("");
+		direccionBD = ref("");
+		pagarBD = ref("");
 	}
 }
 
@@ -279,12 +296,15 @@ function mostrarDatosParticipante() {
 }
 
 function mostrarPerzonalizar() {
-    mostrarPerzonalicacion.value = true;
+	mostrarPerzonalicacion.value = true;
 	mostrarFondo.value = true;
 }
 
 function liberarBoleta() {
 	boletas.value[index.value].estado = "Disponible";
+	const buscarClienteE = clientes.value.findIndex(elemento => elemento.indice == index.value)
+	clientes.value.splice(buscarClienteE, 1)
+
 	modificarBoleta(element.value, index.value);
 }
 
@@ -301,6 +321,29 @@ function cerrarVentanaParticipante() {
 function cerrarVentanaPersonalizar() {
 	mostrarPerzonalicacion.value = false;
 	mostrarFondo.value = false;
+}
+
+function cerrarVentanaBoletaDisponible() {
+	boletaDisponible.value = false;
+}
+
+function cerrarVentanaBoletaReservada() {
+	boletaReservada.value = false;
+}
+
+function cerrarVentanaBoletaComprada() {
+	boletaComprada.value = false;
+}
+
+function cerrarVentanaFormularioBoletaD() {
+	mostrarFormularioBD.value = false;
+	mostrarFondo.value = false;
+}
+
+function cerrarVentanaFormularioMain() {
+	mostrarFormulario.value = false;
+	mostrarFondo.value = false;
+	mostrarInformacion.value = true;
 }
 
 function mostrarLista() {
@@ -340,6 +383,13 @@ const imprimir = () => {
 		doc.autoTable.previous.finalY + 10
 	);
 
+	const totalRecaudado = clientes.value.filter(elemento => elemento.pagar == 'si').length;
+	doc.text(
+		`Total recaudado: ${totalRecaudado * precioBoleta.value }`,
+		10,
+		doc.autoTable.previous.finalY + 20
+	)
+
 	doc.save("vendidas.pdf");
 };
 </script>
@@ -353,7 +403,7 @@ const imprimir = () => {
 			<footer>© Copyright 2024 - Todos los derechos reservados</footer>
 		</div>
 		<!-- Desplegable boleta reservada -->
-		<div id="boletaDesplegableReserva" v-if="boletaReservada == true">
+		<div id="boletaDesplegableReserva" v-if="boletaReservada == true" :style="{ border: '2px solid' + colorPagina, borderBottom: 'none' }">
 			<h3>
 				Boleta
 				<span>{{ element.i > 10 ? element.i : "0" + element.i }}</span>
@@ -369,9 +419,10 @@ const imprimir = () => {
 				<button @click="liberarBoleta()">Liberar boleta</button>
 				<button @click="marcarPagada()">Marcar como pagada</button>
 			</div>
+			<button id="cerrar" @click="cerrarVentanaBoletaReservada()">❌</button>
 		</div>
 		<!-- Desplegable boleta comprada -->
-		<div id="boletaDesplegableReserva" v-if="boletaComprada == true">
+		<div id="boletaDesplegableReserva" v-if="boletaComprada == true" :style="{ border: '2px solid' + colorPagina, borderBottom: 'none' }">
 			<h3>
 				Boleta
 				<span>{{ element.i > 10 ? element.i : "0" + element.i }}</span>
@@ -385,10 +436,11 @@ const imprimir = () => {
 					Ver datos del participante
 				</button>
 				<button @click="liberarBoleta()">Liberar boleta</button>
-			</div>
+			</div>		
+			<button id="cerrar" @click="cerrarVentanaBoletaComprada()">❌</button>
 		</div>
 		<!-- Desplegable boleta disponible -->
-		<div id="boletaDesplegableDisponible" v-if="boletaDisponible == true">
+		<div id="boletaDesplegableDisponible" v-if="boletaDisponible == true" :style="{ border: '2px solid' + colorPagina, borderBottom: 'none' }">
 			<h3>
 				Boleta
 				<span>{{ element.i > 10 ? element.i : "0" + element.i }}</span>
@@ -397,6 +449,7 @@ const imprimir = () => {
 			<div>
 				<button @click="mostrarFBD()">🤝 Adquirir Boleta</button>
 			</div>
+			<button id="cerrar" @click="cerrarVentanaBoletaDisponible()">❌</button>
 		</div>
 		<main>
 			<section id="informacion">
@@ -404,59 +457,45 @@ const imprimir = () => {
 				<div id="infoContenido">
 					<p>
 						🏆<span>{{
-							mostrarInformacion == true ? premio : ""
-						}}</span>
+		mostrarInformacion == true ? premio : ""
+	}}</span>
 					</p>
 					<p>
 						💰<span>{{
-							mostrarInformacion == true ? precioBoleta : ""
-						}}</span>
+			mostrarInformacion == true ? precioBoleta : ""
+		}}</span>
 					</p>
 					<p>
 						🏦<span>{{
-							mostrarInformacion == true ? tipoLoteria : ""
-						}}</span>
+			mostrarInformacion == true ? tipoLoteria : ""
+		}}</span>
 					</p>
 					<p>
 						🗓<span>{{
-							mostrarInformacion == true ? fechaSorteo : ""
-						}}</span>
+			mostrarInformacion == true ? fechaSorteo : ""
+		}}</span>
 					</p>
-					<button
-						@click="editar()"
-						:style="{ backgroundColor: colorPagina }"
-					>
+					<button @click="editar()" :style="{ backgroundColor: colorPagina }">
 						Editar ✏
 					</button>
 				</div>
 			</section>
 			<section id="loteria">
-				<button
-					v-for="(e, i) in boletas"
-					:key="i"
-					@click="modificarBoleta(e, i)"
-					:style="cambiarColorBoton(e.estado)"
-				>
-					{{ e.i < 10 ? "0" + e.i : e.i }}
-				</button>
+				<button v-for="(e, i) in boletas" :key="i" @click="modificarBoleta(e, i)"
+					:style="cambiarColorBoton(e.estado)">
+					{{ e.i < 10 ? "0" + e.i : e.i }} </button>
 			</section>
 			<section id="accion">
 				<h2>ACCIONES</h2>
 				<div id="accContenido">
 					<button id="estadoB">ESTADO</button>
-					<button
-						@click="mostrarLista()"
-						:style="{ backgroundColor: colorPagina }"
-					>
+					<button @click="mostrarLista()" :style="{ backgroundColor: colorPagina }">
 						LISTAR BOLETAS
 					</button>
 					<button @click="mostrarPerzonalizar()" :style="{ backgroundColor: colorPagina }">
 						PERSONALIZAR TALONARIO WEB
 					</button>
-					<button
-						@click="imprimir()"
-						:style="{ backgroundColor: colorPagina }"
-					>
+					<button @click="imprimir()" :style="{ backgroundColor: colorPagina }">
 						GENERAR ARCHIVO DE DATOS
 					</button>
 				</div>
@@ -472,51 +511,24 @@ const imprimir = () => {
 					Boleta a Adquirir:
 					<span>{{ index <= 9 ? "0" + index : index }}</span>
 				</p>
-				<input
-					type="text"
-					id="dBD"
-					placeholder="🧍🏻Nombre"
-					v-model="nombreBD"
-				/>
-				<input
-					type="tel"
-					placeholder="📞 Telefono"
-					v-model="telefonoBD"
-				/>
-				<input
-					type="text"
-					placeholder="🏠 Direccion"
-					v-model="direccionBD"
-				/>
+				<input type="text" id="dBD" placeholder="🧍🏻Nombre" v-model="nombreBD" />
+				<input type="tel" placeholder="📞 Telefono" v-model="telefonoBD" />
+				<input type="text" placeholder="🏠 Direccion" v-model="direccionBD" />
 				<p>Pagar ya:</p>
 				<div>
 					<label for="pagarSi">
-						<input
-							type="radio"
-							name="pagar"
-							id="pagarSi"
-							value="si"
-							v-model="pagarBD"
-						/>
+						<input type="radio" name="pagar" id="pagarSi" value="si" v-model="pagarBD" />
 						Si
 					</label>
 					<label for="pagarSi">
-						<input
-							type="radio"
-							name="pagar"
-							id="pagarNo"
-							value="no"
-							v-model="pagarBD"
-						/>
+						<input type="radio" name="pagar" id="pagarNo" value="no" v-model="pagarBD" />
 						No
 					</label>
 				</div>
-				<button
-					@click="adquirir()"
-					:style="{ backgroundColor: colorPagina }"
-				>
+				<button @click="adquirir()" :style="{ backgroundColor: colorPagina }">
 					ADQUIRIR
 				</button>
+				<button id="cerrar" @click="cerrarVentanaFormularioBoletaD()">❌</button>
 			</section>
 			<!-- Formulario registro talonario -->
 			<section id="formulario" v-if="mostrarFormulario == true">
@@ -525,54 +537,27 @@ const imprimir = () => {
 				</h2>
 				<div id="forContenido">
 					<input type="text" placeholder="Premio" v-model="premio" />
-					<input
-						type="text"
-						placeholder="Valor Boleta"
-						v-model="precioBoleta"
-					/>
+					<input type="text" placeholder="Valor Boleta" v-model="precioBoleta" />
 					<select v-model="tipoLoteria">
 						<option disabled value="">
 							Selecciona una lotería
 						</option>
 						<option value="Baloto" label="Baloto"></option>
 						<option value="La Culona" label="La Culona"></option>
-						<option
-							value="Lotería de Bogotá"
-							label="Lotería de Bogotá"
-						></option>
-						<option
-							value="Lotería de Boyacá"
-							label="Lotería de Boyacá"
-						></option>
-						<option
-							value="Lotería del Huila"
-							label="Lotería del Huila"
-						></option>
-						<option
-							value="Lotería de Medellín"
-							label="Lotería de Medellín"
-						></option>
-						<option
-							value="Lotería del Tolima"
-							label="Lotería del Tolima"
-						></option>
-						<option
-							value="Lotería del Valle"
-							label="Lotería del Valle"
-						></option>
-						<option
-							value="Super Astro"
-							label="Super Astro"
-						></option>
+						<option value="Lotería de Bogotá" label="Lotería de Bogotá"></option>
+						<option value="Lotería de Boyacá" label="Lotería de Boyacá"></option>
+						<option value="Lotería del Huila" label="Lotería del Huila"></option>
+						<option value="Lotería de Medellín" label="Lotería de Medellín"></option>
+						<option value="Lotería del Tolima" label="Lotería del Tolima"></option>
+						<option value="Lotería del Valle" label="Lotería del Valle"></option>
+						<option value="Super Astro" label="Super Astro"></option>
 					</select>
 					<input type="date" id="editDate" v-model="fechaSorteo" />
-					<button
-						@click="generarLoteria()"
-						:style="{ backgroundColor: colorPagina }"
-					>
+					<button @click="generarLoteria()" :style="{ backgroundColor: colorPagina }">
 						GUARDAR
 					</button>
 				</div>
+				<button id="cerrar" @click="cerrarVentanaFormularioMain()" v-if="inicio == 0">❌</button>
 			</section>
 		</main>
 		<div id="participante" v-if="mostrarParticipante == true">
@@ -607,8 +592,8 @@ const imprimir = () => {
 					<p class="texto">
 						ESTADO
 						<span>{{
-							participante.pagar == "si" ? "Pagado" : "Por pagar"
-						}}</span>
+		participante.pagar == "si" ? "Pagado" : "Por pagar"
+	}}</span>
 					</p>
 					<button id="cerrar" @click="cerrarVentanaParticipante()">❌</button>
 				</section>
@@ -630,10 +615,7 @@ const imprimir = () => {
 					<span>{{ e.indice }}</span>
 				</article>
 			</div>
-			<button
-				@click="cerrarLista()"
-				:style="{ backgroundColor: colorPagina }"
-			>
+			<button @click="cerrarLista()" :style="{ backgroundColor: colorPagina }">
 				Cerrar
 			</button>
 		</div>
@@ -644,187 +626,112 @@ const imprimir = () => {
 			<section>
 				<article>
 					<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-					<svg
-						width="100px"
-						height="100px"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="#000000"
-						stroke-width="0.500"
-						xmlns="http://www.w3.org/2000/svg"
-					>
+					<svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
+						stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-							:fill="colorFondo"
-						/>
-						<path
-							opacity="0.4"
+							:fill="colorFondo" />
+						<path opacity="0.4"
 							d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-							fill="#292D32"
-						/>
+							fill="#292D32" />
 						<path
 							d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-							:fill="colorFondo"
-						/>
+							:fill="colorFondo" />
 						<path
 							d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-							:fill="colorFondo"
-						/>
+							:fill="colorFondo" />
 					</svg>
 					<div>
 						<p>Color fondo</p>
-						<input
-							type="color"
-							v-model="colorFondo"
-						/>
+						<input type="color" v-model="colorFondo" />
 					</div>
 				</article>
 				<article>
-					<svg
-						width="100px"
-						height="100px"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="#000000"
-						stroke-width="0.500"
-						xmlns="http://www.w3.org/2000/svg"
-					>
+					<svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
+						stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-							:fill="colorBoletasCompradas"
-						/>
-						<path
-							opacity="0.4"
+							:fill="colorBoletasCompradas" />
+						<path opacity="0.4"
 							d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-							fill="#292D32"
-						/>
+							fill="#292D32" />
 						<path
 							d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-							:fill="colorBoletasCompradas"
-						/>
+							:fill="colorBoletasCompradas" />
 						<path
 							d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-							:fill="colorBoletasCompradas"
-						/>
+							:fill="colorBoletasCompradas" />
 					</svg>
 					<div>
 						<p>Color Boletas Compradas</p>
-						<input
-							type="color"
-							v-model="colorBoletasCompradas"
-						/>
+						<input type="color" v-model="colorBoletasCompradas" />
 					</div>
 				</article>
 				<article>
-					<svg
-						width="100px"
-						height="100px"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="#000000"
-						stroke-width="0.500"
-						xmlns="http://www.w3.org/2000/svg"
-					>
+					<svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
+						stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-							:fill="colorBoletasReservadas"
-						/>
-						<path
-							opacity="0.4"
+							:fill="colorBoletasReservadas" />
+						<path opacity="0.4"
 							d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-							fill="#292D32"
-						/>
+							fill="#292D32" />
 						<path
 							d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-							:fill="colorBoletasReservadas"
-						/>
+							:fill="colorBoletasReservadas" />
 						<path
 							d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-							:fill="colorBoletasReservadas"
-						/>
+							:fill="colorBoletasReservadas" />
 					</svg>
 					<div>
 						<p>Color Boletas Reservadas</p>
-						<input
-							type="color"
-							v-model="colorBoletasReservadas"
-						/>
+						<input type="color" v-model="colorBoletasReservadas" />
 					</div>
 				</article>
 				<article>
-					<svg
-						width="100px"
-						height="100px"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="#000000"
-						stroke-width="0.500"
-						xmlns="http://www.w3.org/2000/svg"
-					>
+					<svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
+						stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-							:fill="colorBoletasDisponibles"
-						/>
-						<path
-							opacity="0.4"
+							:fill="colorBoletasDisponibles" />
+						<path opacity="0.4"
 							d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-							fill="#292D32"
-						/>
+							fill="#292D32" />
 						<path
 							d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-							:fill="colorBoletasDisponibles"
-						/>
+							:fill="colorBoletasDisponibles" />
 						<path
 							d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-							:fill="colorBoletasDisponibles"
-						/>
+							:fill="colorBoletasDisponibles" />
 					</svg>
 					<div>
 						<p>Color Boletas Disponibles</p>
-						<input
-							type="color"
-							v-model="colorBoletasDisponibles"
-						/>
+						<input type="color" v-model="colorBoletasDisponibles" />
 					</div>
 				</article>
 				<article id="final2">
-					<svg
-						width="100px"
-						height="100px"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="#000000"
-						stroke-width="0.500"
-						xmlns="http://www.w3.org/2000/svg"
-					>
+					<svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
+						stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
 						<path
 							d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-							:fill="colorPagina"
-						/>
-						<path
-							opacity="0.4"
+							:fill="colorPagina" />
+						<path opacity="0.4"
 							d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-							fill="#292D32"
-						/>
+							fill="#292D32" />
 						<path
 							d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-							:fill="colorPagina"
-						/>
+							:fill="colorPagina" />
 						<path
 							d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-							:fill="colorPagina"
-						/>
+							:fill="colorPagina" />
 					</svg>
 					<div>
 						<p>Color De La Pagina</p>
-						<input
-							type="color"
-							v-model="colorPagina"
-						/>
+						<input type="color" v-model="colorPagina" />
 					</div>
 				</article>
 			</section>
-            <button id="cerrar2" @click="cerrarVentanaPersonalizar()">❌</button>
+			<button id="cerrar2" @click="cerrarVentanaPersonalizar()">❌</button>
 		</div>
 	</div>
 </template>
@@ -846,7 +753,8 @@ const imprimir = () => {
 	font-size: 10px;
 	padding: 5px 0 5px 0;
 	width: 100%;
-	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.26);
+	text-align: center;
+	color: #fff;
 }
 
 #footer {
@@ -854,19 +762,22 @@ const imprimir = () => {
 	bottom: 0;
 	left: 50%;
 	transform: translate(-50%);
-	padding: 5px 0 5px 0;
+	padding: 5px 30px 5px 0;
 	width: 100%;
+	text-align: end;
+	color: #fff;
 }
 
 main {
-	padding: 130px 0 0 0;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
+	align-items: center;
+	height: 100vh;
 }
 
 #informacion {
-	margin-top: 10rem;
+	margin-top: 5rem;
 	color: black;
 	background-color: rgb(211, 211, 211);
 	border-radius: 20px;
@@ -892,13 +803,13 @@ main {
 	position: relative;
 	left: 50%;
 	transform: translate(-50%);
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 400;
 	padding: 5px 10px 7px 10px;
 }
 
 #accion {
-	margin-top: 10rem;
+	margin-top: 5rem;
 	color: #000000;
 	background-color: rgb(211, 211, 211);
 	border-radius: 20px;
@@ -1066,6 +977,7 @@ main {
 #loteria {
 	width: 40rem;
 	height: 30rem;
+	margin-top: 3rem;
 	margin-left: 40px;
 	margin-right: 40px;
 	display: flex;
@@ -1101,6 +1013,8 @@ main {
 #boletaDesplegableReserva {
 	display: flex;
 	flex-direction: column;
+	text-align: center;
+	border-radius: 6px 6px 0 0;
 	background-color: #fff;
 	color: black;
 	width: 18rem;
@@ -1132,6 +1046,8 @@ main {
 #boletaDesplegableDisponible {
 	display: flex;
 	flex-direction: column;
+	text-align: center;
+	border-radius: 6px 6px 0 0;
 	background-color: #fff;
 	color: black;
 	width: 18rem;
